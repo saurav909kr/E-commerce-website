@@ -10,11 +10,15 @@ import Order from "./pages/Order";
 import PlaceOrder from "./pages/PlaceOrder";
 import Product from "./pages/Product";
 import Contact from "./pages/Contact";
+import Footer from "./component/Footer";
+import Search from "./component/Search";
+
 
 const App = () => {
   return (
     <div className="px-2 sm:px-[3vw] md:px-[3vw] lg:px-[2vw]">
       <Navbar />
+      <Search/>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
@@ -26,6 +30,8 @@ const App = () => {
         <Route path="/product/:productId" element={<Product />} />
         <Route path="/contact" element={<Contact />} />
       </Routes>
+      <Footer/>
+
     </div>
   );
 };

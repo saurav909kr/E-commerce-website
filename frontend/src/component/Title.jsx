@@ -2,7 +2,7 @@ import React from "react";
 
 const Title = ({ text1, text2 }) => {
   return (
-    <div className="text-center mb-4 px-6">
+    <div className="text-start mb-4 px-6">
       <div className="inline-block">
         <p className="text-2xl sm:text-3xl md:text-3.5xl font-bold text-gray-900 tracking-tight">
           {text1}

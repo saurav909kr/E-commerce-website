@@ -41,13 +41,13 @@ const registerUser = async (req, res) => {
     //checking user already exit or not
     const exits = await userModel.findOne({ email });
     if (exits) {
-      return res.json({ success: "false", message: "user already exits" });
+       return res.json({ success: false, message: "user already exits" });
     }
 
     //validating email and strong password
     if (!validator.isEmail(email)) {
       return res.json({
-        success: "false",
+        success: false,
         message: "please enter valid email",
       });
     }
@@ -75,7 +75,7 @@ const registerUser = async (req, res) => {
 
     const token = createToken(user._id);
 
-    res.json({ success: "true", token });
+    res.json({ success: true, token });
   } catch (error) {
     console.log(error);
     res.json({ success: false, message: error.message });

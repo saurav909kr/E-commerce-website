@@ -1,23 +1,37 @@
 import React, { useContext, useState } from "react";
 import { assets } from "../assets/assets";
-import { NavLink, Link, useNavigate} from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import { ShopContext } from "../context/shopcontext";
 
 const Navbar = () => {
-
-  const navigate = useNavigate();
   const [visible, setvisible] = useState(false);
 
-  const {setShowSearch,totalCartItem} = useContext(ShopContext);
+  const {
+    setShowSearch,
+    totalCartItem,
+    navigate,
+    token,
+    setToken,
+    setCartItem,
+  } = useContext(ShopContext);
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    setToken("");
+    setCartItem({});
+    navigate("/login");
+  };
 
   const handleSearchclick = () => {
     setShowSearch(true);
-    navigate('/collection')
-  }
+    navigate("/collection");
+  };
 
   return (
     <div className="flex items-center justify-between py-5 font-medium">
-      <Link to="/"><img src={assets.logo} alt="logo-img" className="w-36" /></Link>
+      <Link to="/">
+        <img src={assets.logo} alt="logo-img" className="w-36" />
+      </Link>
 
       <ul className="hidden sm:flex gap-5 text-sm text-gray-700">
         <NavLink to="/" className="flex flex-col items-center gap-1">
@@ -57,21 +71,31 @@ const Navbar = () => {
           alt="search-icon"
         />
         <div className="group relative">
-          <Link to= "/login"><img src={assets.profile_icon} alt="profile-icon" className="w-5"/></Link>
+          <img
+            onClick={() => (token ? null : navigate("/login"))}
+            src={assets.profile_icon}
+            alt="profile-icon"
+            className="w-5 cursor-pointer"
+          />
 
-          <div className="group-hover:block hidden absolute dropdown-menu right-0 pt-4">
-            <div className="flex flex-col fap-2 w-36 py-3 px-5 bg-slate-100 text-gray-100 rounded">
-              <p className="cursor-pointer text-gray-500 hover:text-black transition-colors duration-200">
-                My Profile
-              </p>
-              <p className="cursor-pointer text-gray-500 hover:text-black transition-colors duration-200">
-                Order
-              </p>
-              <p className="cursor-pointer text-gray-500 hover:text-black transition-colors duration-200">
-                Logout
-              </p>
+          {token && (
+            <div className="group-hover:block hidden absolute dropdown-menu right-0 pt-4">
+              <div className="flex flex-col fap-2 w-36 py-3 px-5 bg-slate-100 text-gray-100 rounded">
+                <p className="cursor-pointer text-gray-500 hover:text-black transition-colors duration-200">
+                  My Profile
+                </p>
+                <p onClick={()=>navigate('/order')} className="cursor-pointer text-gray-500 hover:text-black transition-colors duration-200">
+                  Order
+                </p>
+                <p
+                  onClick={logout}
+                  className="cursor-pointer text-gray-500 hover:text-black transition-colors duration-200"
+                >
+                  Logout
+                </p>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         <Link to="/cart" className="relative">

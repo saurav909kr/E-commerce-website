@@ -10,20 +10,22 @@ const Cart = () => {
   const [cartData, setCartData] = useState([]);
 
   useEffect(() => {
-    const tempData = [];
-    for (const items in cartItem) {
-      for (const item in cartItem[items]) {
-        if (cartItem[items][item] > 0) {
-          tempData.push({
-            _id: items,
-            size: item,
-            quantity: cartItem[items][item],
-          });
+    if (products.length > 0) {
+      const tempData = [];
+      for (const items in cartItem) {
+        for (const item in cartItem[items]) {
+          if (cartItem[items][item] > 0) {
+            tempData.push({
+              _id: items,
+              size: item,
+              quantity: cartItem[items][item],
+            });
+          }
         }
       }
+      setCartData(tempData);
     }
-    setCartData(tempData);
-  }, [cartItem]);
+  }, [cartItem, products]);
 
   return (
     <div className="border-t pt-14  text-gray-700">
@@ -62,7 +64,15 @@ const Cart = () => {
                 </div>
               </div>
               <input
-                onChange = {(e)=> e.target.value === '' || e.target.value === '0'? null : updateQuantity(item._id, item.size, Number(e.target.value))}
+                onChange={(e) =>
+                  e.target.value === "" || e.target.value === "0"
+                    ? null
+                    : updateQuantity(
+                        item._id,
+                        item.size,
+                        Number(e.target.value),
+                      )
+                }
                 className=" outline-0 border max-w-10 sm:max-w-20 px-1 sm:px-2 py-1"
                 type="number"
                 min={1}
@@ -81,9 +91,14 @@ const Cart = () => {
 
       <div className="flex justify-end my-10">
         <div className="w-full sm:w-[450px]">
-          <TotalCart/>
+          <TotalCart />
           <div className="w-full text-end">
-            <button onClick={()=>navigate('/place-order')} className="text-sm bg-black text-white p-3 my-2">Processed To Checkout</button>
+            <button
+              onClick={() => navigate("/place-order")}
+              className="text-sm bg-black text-white p-3 my-2"
+            >
+              Processed To Checkout
+            </button>
           </div>
         </div>
       </div>

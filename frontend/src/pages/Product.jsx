@@ -25,7 +25,7 @@ const Product = () => {
     fethProductData();
   }, [productId]);
 
-  console.log(productId);
+  // console.log(productId);
 
   return productData ? (
     <div className="border-t-2 pt-5 mb-5">

@@ -9,9 +9,9 @@ const BestSeller = () => {
   const [bestSeller, setBestSeller] = useState([]);
 
   useEffect(() => {
-    const bestSeller = products.filter((item) => item.bestseller);
-    setBestSeller(bestSeller.slice(0, 5));
-  }, []);
+    const bestSeller = products.filter((item) => item.bestSeller);
+    setBestSeller(bestSeller.slice(0, 1));
+  }, [products]);
 
   return (
     <div className="py-12 px-4 sm:px-6 lg:px-8">

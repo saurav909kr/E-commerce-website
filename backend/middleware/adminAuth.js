@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 
 const adminAuth = (req, res, next) => {
   try {
-    console.log({printbody:req.headers});
+    // console.log({printbody:req.headers});
     const {token} = req.headers;
 
     if (!token) {

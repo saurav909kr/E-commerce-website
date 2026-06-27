@@ -1,52 +1,98 @@
 import React, { useContext, useState } from "react";
 import Title from "../component/Title";
 import TotalCart from "../component/TotalCart";
-import { assets,} from "../assets/assets";
+import { assets } from "../assets/assets";
 import { ShopContext } from "../context/shopcontext";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { currency } from "../../../admin/src/App";
 
 const PlaceOrder = () => {
   const [method, setMethod] = useState("cod");
-  const { navigate, cartItem, products,   backendUrl, delivery_fee, token, getCartAmount, setCartItem,} = useContext(ShopContext);
+  const {
+    navigate,
+    cartItem,
+    products,
+    backendUrl,
+    delivery_fee,
+    token,
+    getCartAmount,
+    setCartItem,
+  } = useContext(ShopContext);
 
   // const for adress
-  const [formData, setFormData] = useState( {
-    firstName: '',
-    lastName: '',
-    email: '',
-    street: '',
-    city: '',
-    state:'',
-    pincode: '',
-    country: '',
-    phone: ''
-  })
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    street: "",
+    city: "",
+    state: "",
+    pincode: "",
+    country: "",
+    phone: "",
+  });
+
+  const initPay = (order) => {
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      amount: order.amount,
+      currency: order.currency,
+      name: "Order Payment",
+      description: "Order Payment",
+      order_id: order.id,
+      receipt: order.receipt,
+      handler: async (response) => {
+        // console.log(response)
+        try {
+          const { data } = await axios.post(
+            backendUrl + "api/order/verifyRazorpay",
+            response,
+            { headers: { token } },
+          );
+          if (data.success) {
+            setCartItem({});
+            navigate("/order");
+            toast.success("Payment Successful");
+          } else {
+            toast.error("Payment verification failed");
+          }
+        } catch (error) {
+          console.log(error);
+          toast.error(error);
+        }
+      },
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+  };
 
   //set adress data
-  const onChangeHandler = (event) =>{
+  const onChangeHandler = (event) => {
     const name = event.target.name;
     const value = event.target.value;
 
-    setFormData(data => ({...data, [name]: value}))
-  }
-  
+    setFormData((data) => ({ ...data, [name]: value }));
+  };
+
   //get all the orderitem for sending to backend to save in database
   const onSubmitHandler = async (event) => {
     event.preventDefault();
     try {
-      let orderItems = []
+      let orderItems = [];
 
-      for(const items in cartItem){
-        for(const item in cartItem[items]){
-          if(cartItem[items][item] > 0){
-             const itemInfo = structuredClone(products.find(product => product._id === items
-             ))
-             if(itemInfo){
-              itemInfo.size = item
-              itemInfo.quantity = cartItem[items][item]
-              orderItems.push(itemInfo)
-             }
+      for (const items in cartItem) {
+        for (const item in cartItem[items]) {
+          if (cartItem[items][item] > 0) {
+            const itemInfo = structuredClone(
+              products.find((product) => product._id === items),
+            );
+            if (itemInfo) {
+              itemInfo.size = item;
+              itemInfo.quantity = cartItem[items][item];
+              orderItems.push(itemInfo);
+            }
           }
         }
       }
@@ -54,47 +100,77 @@ const PlaceOrder = () => {
       let orderData = {
         address: formData,
         items: orderItems,
-        amount : getCartAmount() + delivery_fee
-      }
-      
-      switch(method){
+        amount: getCartAmount() + delivery_fee,
+      };
+
+      switch (method) {
         //api  call for COd
-        case 'cod':
-        
-          const response = await axios.post(backendUrl + 'api/order/cod', orderData, {headers:{token}} )
+        case "cod":
+          const response = await axios.post(
+            backendUrl + "api/order/cod",
+            orderData,
+            { headers: { token } },
+          );
           // console.log(response)
-          if(response.data.success){
-            setCartItem({})
-            navigate('/order')
-          } else{
-            toast.error(response.data.message)
+          if (response.data.success) {
+            setCartItem({});
+            navigate("/order");
+          } else {
+            toast.error(response.data.message);
           }
           break;
-          
+
+        case "stripe":
+          const responseStripe = await axios.post(
+            backendUrl + "api/order/stripe",
+            orderData,
+            { headers: { token } },
+          );
+
+          if (responseStripe.data.success) {
+            const { session_url } = responseStripe.data;
+            window.location.replace(session_url);
+          } else {
+            toast.error(responseStripe.data.message);
+          }
+          break;
+
+        case "razorpay":
+          const responseRazorpay = await axios.post(
+            backendUrl + "api/order/razorpay",
+            orderData,
+            { headers: { token } },
+          );
+
+          if (responseRazorpay.data.success) {
+            // console.log(responseRazorpay.data.order)
+            initPay(responseRazorpay.data.order);
+          } else {
+          }
+          break;
+
         default:
-          break
+          break;
       }
-
     } catch (error) {
-      console.log(error)
-      toast.error(error.message)
-
+      console.log(error);
+      toast.error(error.message);
     }
-  }
-
+  };
 
   return (
-    <form onSubmit={onSubmitHandler}  className="flex flex-col sm:flex-row justify-between gap-4 pt-5 sm:pt-5  min-h-[80vh]">
+    <form
+      onSubmit={onSubmitHandler}
+      className="flex flex-col sm:flex-row justify-between gap-4 pt-5 sm:pt-5  min-h-[80vh]"
+    >
       {/**left side */}
       <div className="mt-8">
-
         <div className="text-xl sm:text-2xl my-3">
           <Title text1={"Delivery"} text2={"Information"} />
         </div>
 
         <div className="flex flex-col gap-2 px-2 py-2">
           <div className="flex flex-col sm:flex-row gap-4 mt-1 text-sm ">
-
             <input
               onChange={onChangeHandler}
               name="firstName"
@@ -114,7 +190,6 @@ const PlaceOrder = () => {
               placeholder="LastName"
               required
             />
-
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 mt-2">
@@ -199,7 +274,6 @@ const PlaceOrder = () => {
 
       {/**right */}
       <div className="mt-8 p">
-
         <div className="mt-8 min-w-120">
           <TotalCart />
         </div>
@@ -209,37 +283,44 @@ const PlaceOrder = () => {
         </div>
 
         <div className="flex gap-3 flex-col lg:flex-row">
-
-          <div onClick={() => setMethod("stripe")} className="flex items-center gap-3 border p-2 px-3 cursor-pointer">
-            <p className={`min-w-3.5 h-3.5 border rounded-full ${method === "stripe" ? "bg-green-500" : ""}`}></p>
+          <div
+            onClick={() => setMethod("stripe")}
+            className="flex items-center gap-3 border p-2 px-3 cursor-pointer"
+          >
+            <p
+              className={`min-w-3.5 h-3.5 border rounded-full ${method === "stripe" ? "bg-green-500" : ""}`}
+            ></p>
             <img src={assets.stripe_logo} className="h-5 mx-4" alt="" />
           </div>
 
-          <div onClick={() => setMethod("razorpay")} className="flex items-center gap-3 border p-2 px-3 cursor-pointer">
-            <p className={`min-w-3.5 h-3.5 border rounded-full ${method === "razorpay" ? "bg-green-500" : ""}`}></p>
+          <div
+            onClick={() => setMethod("razorpay")}
+            className="flex items-center gap-3 border p-2 px-3 cursor-pointer"
+          >
+            <p
+              className={`min-w-3.5 h-3.5 border rounded-full ${method === "razorpay" ? "bg-green-500" : ""}`}
+            ></p>
             <img src={assets.razorpay_logo} className="h-5 mx-4" alt="" />
           </div>
 
           <div
             onClick={() => setMethod("cod")}
-            className="flex items-center gap-3 border p-2 px-3 cursor-pointer">
-            <p className={`min-w-3.5 h-3.5 border rounded-full ${method === "cod" ? "bg-green-500" : ""}`}></p>
+            className="flex items-center gap-3 border p-2 px-3 cursor-pointer"
+          >
+            <p
+              className={`min-w-3.5 h-3.5 border rounded-full ${method === "cod" ? "bg-green-500" : ""}`}
+            ></p>
             <p className="text-gray-500 text-sm font-medium mx-4">
               CASH ON DELIVERY
             </p>
           </div>
-
-
         </div>
 
         <div className="w-full flex justify-end mt-8">
-          <button
-            type='submit'
-            className="bg-black text-white px-10 py-3" >
+          <button type="submit" className="bg-black text-white px-10 py-3">
             PLACE ORDER
           </button>
         </div>
-
       </div>
     </form>
   );

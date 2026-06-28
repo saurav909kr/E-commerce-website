@@ -38,6 +38,4 @@ app.get('/',(req,res)=>{
 app.listen(port, ()=> console.log('server started on Port :' + port))
 
 
-//XGebSkOZMehZWApA
 
-//mongodb+srv://<db_username>:XGebSkOZMehZWApA@cluster2.r94pxn0.mongodb.net/?appName=Cluster2
